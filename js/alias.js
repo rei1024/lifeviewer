@@ -30,12 +30,16 @@ This file is part of LifeViewer
 
 	// initialise Alias Manager
 	AliasManager.init = function() {
-		var	/** @type {string} */ currentDef = "",
+		var	/** @type {Array} */ current,
+			/** @type {string} */ currentDef = "",
 			/** @type {string} */ currentName = "",
 			/** @type {number} */ i = 0,
-			/** @type {number} */ j = 0,
 			/** @type {Array} */ a = null,
-			/** @type {Array} */ s = null;
+			/** @type {Array} */ s = null,
+			/** @type {Object} */ firstIndexDefMap = Object.create(null),
+			/** @type {Object} */ firstIndexNameMap = Object.create(null),
+			/** @type {Object} */ firstIndexDef,
+			/** @type {Object} */ firstIndexName;
 
 		// clear the current lists
 		this.aliases = [];
@@ -786,25 +790,33 @@ This file is part of LifeViewer
 		a.push(["Unidim3", "B12ci34578/S02345678|B6i7/S268"]);
 
 		// mark duplicate definitions and names
-		this.aliases[0][2] = false;
-		this.aliases[0][3] = false;
-		for (i = 1; i < this.aliases.length; i += 1) {
-			// get the next alias rule
-			currentDef = this.aliases[i][1];
-			currentName = this.aliases[i][0];
-			this.aliases[i][2] = false;
-			this.aliases[i][3] = false;
-			for (j = 0; j < i; j += 1) {
-				if (this.aliases[j][0] === currentName) {
-					// mark as duplicate name
-					this.aliases[j][3] = true;
-					this.aliases[i][3] = true;
+		for (i = 0; i < a.length; i += 1) {
+			current = a[i];
+			current[2] = false;
+			current[3] = false;
+
+			currentDef = current[1];
+			firstIndexDef = firstIndexDefMap[currentDef];
+			if (firstIndexDef !== undefined) {
+				if (!firstIndexDef.dup) {
+					firstIndexDef.dup = true;
+					a[firstIndexDef.i][2] = true
 				}
-				if (this.aliases[j][1] === currentDef) {
-					// mark as duplicate rule
-					this.aliases[j][2] = true;
-					this.aliases[i][2] = true;
+				current[2] = true;
+			} else {
+				firstIndexDefMap[currentDef] = { i, dup: false };
+			}
+
+			currentName = current[0];
+			firstIndexName = firstIndexNameMap[currentName];
+			if (firstIndexName !== undefined) {
+				if (!firstIndexName.dup) {
+					firstIndexName.dup = true;
+					a[firstIndexName.i][3] = true;
 				}
+				current[3] = true;
+			} else {
+				firstIndexNameMap[currentName] = { i, dup: false };
 			}
 		}
 	};
